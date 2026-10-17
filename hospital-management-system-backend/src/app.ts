@@ -27,32 +27,8 @@ export function createApp(): Application {
 
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Allow requests without an Origin header,
-        // such as server-to-server requests and health checks.
-        if (!origin) {
-          return callback(null, true);
-        }
-
-        // Support wildcard configuration.
-        // Do not combine wildcard origins with credentials in production.
-        if (allowedOrigins.includes('*')) {
-          if (env.NODE_ENV === 'production') {
-            return callback(new Error('Wildcard CORS origin is not allowed in production.'));
-          }
-
-          return callback(null, true);
-        }
-
-        if (allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-
-        return callback(new Error(`Origin not allowed by CORS: ${origin}`));
-      },
+      origin: 'https://hospital-management-system-9ic6.vercel.app', // Backend URL
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
     }),
   );
 

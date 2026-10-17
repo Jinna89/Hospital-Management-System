@@ -1,8 +1,25 @@
+//{
+//  "version": 2,
+//  "buildCommand": "echo 'No build step needed — @vercel/node compiles api/index.ts per-function'",
+//  "installCommand": "npm install",
+//  "rewrites": [
+//    { "source": "/(.*)", "destination": "/api" }
+//  ]
+//}
+
 {
   "version": 2,
   "buildCommand": "echo 'No build step needed — @vercel/node compiles api/index.ts per-function'",
   "installCommand": "npm install",
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": ["node_modules/.prisma/client/**"]
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
   ]
 }
