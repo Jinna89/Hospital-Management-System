@@ -2,8 +2,11 @@
   "version": 2,
   "buildCommand": "npx prisma generate && node -e \"const fs=require('fs'); const p='node_modules/.prisma/client/query_compiler_bg.wasm'; console.log('PRISMA_WASM_EXISTS:', fs.existsSync(p)); if (!fs.existsSync(p)) process.exit(1);\"",
   "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
-  ]
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "**/node_modules/.prisma/client/**"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }
 
