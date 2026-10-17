@@ -27,7 +27,7 @@ export function createApp(): Application {
 
   app.use(
     cors({
-      origin: 'https://hospital-management-system-9ic6.vercel.app', // Backend URL
+      origin: allowedOrigins,
       credentials: true,
     }),
   );
