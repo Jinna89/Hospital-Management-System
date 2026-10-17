@@ -11,7 +11,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/hospital-frontend" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
@@ -59,7 +59,7 @@
       <option name="presentableId" value="Default" />
       <updated>1792262794273</updated>
       <workItem from="1792262795436" duration="828000" />
-      <workItem from="1792264173892" duration="941000" />
+      <workItem from="1792264173892" duration="1711000" />
     </task>
     <servers />
   </component>
