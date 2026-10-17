@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  --radius: 0.625rem;
+
+  /* MediCare HMS brand palette */
+  --navy: #091540;
+  --royal: #1b2cc1;
+  --periwinkle: #7692ff;
+  --sky: #abd2fa;
+
+  --background: #ffffff;
+  --foreground: #091540;
+
+  --card: #ffffff;
+  --card-foreground: #091540;
+
+  --popover: #ffffff;
+  --popover-foreground: #091540;
+
+  --primary: #1b2cc1;
+  --primary-foreground: #ffffff;
+
+  --secondary: #abd2fa;
+  --secondary-foreground: #091540;
+
+  --accent: #7692ff;
+  --accent-foreground: #ffffff;
+
+  --muted: #f1f5fd;
+  --muted-foreground: #4b5876;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --success: #15803d;
+  --warning: #b45309;
+
+  --border: #e3e9f8;
+  --input: #e3e9f8;
+  --ring: #7692ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy: var(--navy);
+  --color-royal: var(--royal);
+  --color-periwinkle: var(--periwinkle);
+  --color-sky: var(--sky);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  border-color: var(--border);
+}
+
+::selection {
+  background: var(--periwinkle);
+  color: #ffffff;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}

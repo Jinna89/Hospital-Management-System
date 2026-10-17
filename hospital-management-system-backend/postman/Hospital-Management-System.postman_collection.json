@@ -1,0 +1,4345 @@
+{
+  "info": {
+    "_postman_id": "a8aa0eae-8b7b-41e9-a97f-583bad5c4480",
+    "name": "Hospital & Doctor Management System API",
+    "description": "REST API for the Hospital & Doctor Management System.\n\nBase URL: {{baseUrl}} \u2014 defaults to http://localhost:5000/api/v1 for local dev. Switch to the \"Vercel Production\" environment (or edit the baseUrl variable) when testing a deployed instance, e.g. https://your-project.vercel.app/api/v1.\n\n**Response format** \u2014 every endpoint returns:\n```\nSuccess: { \"success\": true, \"message\": string, \"data\": {} }\nError:   { \"success\": false, \"message\": string, \"errors\": [] }\n```\n\n**Auth flow:**\n1. Call Authentication > Register or Login to get `accessToken` + `refreshToken`.\n2. This collection auto-saves both into collection variables via the test scripts on those two requests, so every other request's `Authorization: Bearer {{accessToken}}` header works automatically.\n3. When the access token expires (15 min default), call Authentication > Refresh Token \u2014 it also auto-saves the new pair.\n\n**Deployment note:** the API runs as a single Vercel serverless function (`api/index.ts`), with every request rewritten through it \u2014 the URL paths themselves are unchanged, so this collection works identically against localhost or a Vercel deployment; just switch the environment.\n\n**Implementation status:** Authentication is fully implemented against the current codebase. All other folders document the endpoint contracts as designed in the spec; check the project README for which modules are implemented vs. scaffolded.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Registration, login, token refresh/rotation, logout.",
+      "item": [
+        {
+          "name": "Register (Patient)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a new PATIENT account. Doctor and Admin accounts are created by Admin, not through public registration.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format, unique\n- password: min 8 chars, at least 1 uppercase letter, at least 1 number\n- name: 2-120 chars\n- phone: optional, 6-20 chars",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\",\n  \"name\": \"Rahim Uddin\",\n  \"phone\": \"+8801700000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Creates a new PATIENT account. Doctor and Admin accounts are created by Admin, not through public registration.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format, unique\n- password: min 8 chars, at least 1 uppercase letter, at least 1 number\n- name: 2-120 chars\n- phone: optional, 6-20 chars",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\",\n  \"name\": \"Rahim Uddin\",\n  \"phone\": \"+8801700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Registration successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"patient@example.com\",\n      \"role\": \"PATIENT\"\n    },\n    \"accessToken\": \"eyJhbGciOi...\",\n    \"refreshToken\": \"eyJhbGciOi...\"\n  }\n}"
+            },
+            {
+              "name": "Email already exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Creates a new PATIENT account. Doctor and Admin accounts are created by Admin, not through public registration.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format, unique\n- password: min 8 chars, at least 1 uppercase letter, at least 1 number\n- name: 2-120 chars\n- phone: optional, 6-20 chars",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\",\n  \"name\": \"Rahim Uddin\",\n  \"phone\": \"+8801700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Email already exists",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"An account with this email already exists\",\n  \"errors\": []\n}"
+            },
+            {
+              "name": "Validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Creates a new PATIENT account. Doctor and Admin accounts are created by Admin, not through public registration.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format, unique\n- password: min 8 chars, at least 1 uppercase letter, at least 1 number\n- name: 2-120 chars\n- phone: optional, 6-20 chars",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\",\n  \"name\": \"Rahim Uddin\",\n  \"phone\": \"+8801700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Validation failed",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"path\": \"password\",\n      \"message\": \"Password must contain an uppercase letter\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    }",
+                  "    if (json.data && json.data.refreshToken) {",
+                  "        pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates any role (patient, doctor, admin) and returns an access + refresh token pair.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format\n- password: required",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticates any role (patient, doctor, admin) and returns an access + refresh token pair.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format\n- password: required",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"patient@example.com\",\n      \"role\": \"PATIENT\"\n    },\n    \"accessToken\": \"eyJhbGciOi...\",\n    \"refreshToken\": \"eyJhbGciOi...\"\n  }\n}"
+            },
+            {
+              "name": "Invalid credentials",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticates any role (patient, doctor, admin) and returns an access + refresh token pair.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format\n- password: required",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Invalid credentials",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\",\n  \"errors\": []\n}"
+            },
+            {
+              "name": "Account suspended",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticates any role (patient, doctor, admin) and returns an access + refresh token pair.\n\n**Auth required:** No\n**Role required:** None (public)\n\n**Validation rules:**\n- email: valid email format\n- password: required",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Passw0rd123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Account suspended",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This account has been suspended. Contact hospital administration.\",\n  \"errors\": []\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    }",
+                  "    if (json.data && json.data.refreshToken) {",
+                  "        pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Exchanges a valid, non-revoked refresh token for a brand new access + refresh token pair. The refresh token used in this call is immediately revoked (rotation) to limit damage if it's ever stolen.\n\n**Auth required:** No (uses refresh token in body, not Bearer header)\n**Role required:** None",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"eyJhbGciOi...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "description": "Exchanges a valid, non-revoked refresh token for a brand new access + refresh token pair. The refresh token used in this call is immediately revoked (rotation) to limit damage if it's ever stolen.\n\n**Auth required:** No (uses refresh token in body, not Bearer header)\n**Role required:** None",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"eyJhbGciOi...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"patient@example.com\",\n      \"role\": \"PATIENT\"\n    },\n    \"accessToken\": \"eyJhbGciOi...\",\n    \"refreshToken\": \"eyJhbGciOi...\"\n  }\n}"
+            },
+            {
+              "name": "Invalid/expired/revoked",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "description": "Exchanges a valid, non-revoked refresh token for a brand new access + refresh token pair. The refresh token used in this call is immediately revoked (rotation) to limit damage if it's ever stolen.\n\n**Auth required:** No (uses refresh token in body, not Bearer header)\n**Role required:** None",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"eyJhbGciOi...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Invalid/expired/revoked",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Refresh token is invalid, expired, or has been revoked\",\n  \"errors\": []\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    }",
+                  "    if (json.data && json.data.refreshToken) {",
+                  "        pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the given refresh token so it can no longer be used, even if it hasn't expired yet. Does not require the access token \u2014 logout succeeds even if the access token already expired.\n\n**Auth required:** No\n**Role required:** None",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"eyJhbGciOi...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Revokes the given refresh token so it can no longer be used, even if it hasn't expired yet. Does not require the access token \u2014 logout succeeds even if the access token already expired.\n\n**Auth required:** No\n**Role required:** None",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"eyJhbGciOi...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Logout successful\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns the authenticated user's id and role. Useful for the frontend to confirm the access token is valid and know which role's UI to render.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "Returns the authenticated user's id and role. Useful for the frontend to confirm the access token is valid and know which role's UI to render.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Current session\",\n  \"data\": {\n    \"userId\": \"uuid\",\n    \"role\": \"PATIENT\"\n  }\n}"
+            },
+            {
+              "name": "Missing/invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "Returns the authenticated user's id and role. Useful for the frontend to confirm the access token is valid and know which role's UI to render.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "Missing/invalid token",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Missing or malformed Authorization header\",\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "description": "Self-service profile read/update for any authenticated role.",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Returns the full profile for the logged-in user (patient or doctor profile fields depending on role).\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Returns the full profile for the logged-in user (patient or doctor profile fields depending on role).\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"email\": \"patient@example.com\",\n    \"role\": \"PATIENT\",\n    \"profile\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Updates the logged-in user's own profile fields. Patients cannot use this to edit historical medical records \u2014 only demographic/contact fields.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN\n\n**Validation rules:**\n- Only whitelisted fields per role are accepted (e.g. patients cannot set verificationStatus)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+8801700000001\",\n  \"address\": \"House 12, Road 5, Dhaka\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Updates the logged-in user's own profile fields. Patients cannot use this to edit historical medical records \u2014 only demographic/contact fields.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN\n\n**Validation rules:**\n- Only whitelisted fields per role are accepted (e.g. patients cannot set verificationStatus)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+8801700000001\",\n  \"address\": \"House 12, Road 5, Dhaka\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile updated\",\n  \"data\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doctors",
+      "description": "Public doctor discovery + doctor's own profile management.",
+      "item": [
+        {
+          "name": "List Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors?page=1&limit=10&specialty=Cardiology&sortBy=experience&sortOrder=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "specialty",
+                  "value": "Cardiology"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "experience"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Public paginated, filterable, sortable list of verified + active doctors.\n\n**Auth required:** No\n**Role required:** None"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors?page=1&limit=10&specialty=Cardiology&sortBy=experience&sortOrder=desc",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "specialty",
+                      "value": "Cardiology"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "experience"
+                    },
+                    {
+                      "key": "sortOrder",
+                      "value": "desc"
+                    }
+                  ]
+                },
+                "description": "Public paginated, filterable, sortable list of verified + active doctors.\n\n**Auth required:** No\n**Role required:** None"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Doctors retrieved\",\n  \"data\": [\n    {\n      \"id\": \"uuid\",\n      \"name\": \"Dr. Abdur Rahman\",\n      \"specialty\": \"Cardiology\",\n      \"consultationFee\": \"1000.00\",\n      \"experienceYears\": 12\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 42,\n    \"totalPages\": 5\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/search?q=cardio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "cardio"
+                }
+              ]
+            },
+            "description": "Free-text search across doctor name/specialty/department.\n\n**Auth required:** No\n**Role required:** None"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/search?q=cardio",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "search"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "cardio"
+                    }
+                  ]
+                },
+                "description": "Free-text search across doctor name/specialty/department.\n\n**Auth required:** No\n**Role required:** None"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Search results\",\n  \"data\": [\n    {\n      \"id\": \"uuid\",\n      \"name\": \"Dr. Abdur Rahman\",\n      \"specialty\": \"Cardiology\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Doctor By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                ":id"
+              ]
+            },
+            "description": "Public doctor profile detail page.\n\n**Auth required:** No\n**Role required:** None\n\n**Path params:**\n- id: Doctor id (uuid)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    ":id"
+                  ]
+                },
+                "description": "Public doctor profile detail page.\n\n**Auth required:** No\n**Role required:** None\n\n**Path params:**\n- id: Doctor id (uuid)"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Doctor retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"name\": \"Dr. Abdur Rahman\",\n    \"specialty\": \"Cardiology\",\n    \"bio\": \"Senior consultant cardiologist.\",\n    \"consultationFee\": \"1000.00\"\n  }\n}"
+            },
+            {
+              "name": "Not found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    ":id"
+                  ]
+                },
+                "description": "Public doctor profile detail page.\n\n**Auth required:** No\n**Role required:** None\n\n**Path params:**\n- id: Doctor id (uuid)"
+              },
+              "status": "Not found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Resource not found\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Doctor Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                "me"
+              ]
+            },
+            "description": "Doctor updates their own professional profile (bio, fee, profile image, etc). Cannot self-set verificationStatus.\n\n**Auth required:** Yes\n**Role required:** DOCTOR",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Updated bio text\",\n  \"consultationFee\": 1200\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me"
+                  ]
+                },
+                "description": "Doctor updates their own professional profile (bio, fee, profile image, etc). Cannot self-set verificationStatus.\n\n**Auth required:** Yes\n**Role required:** DOCTOR",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Updated bio text\",\n  \"consultationFee\": 1200\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Doctor profile updated\",\n  \"data\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doctor Schedule",
+      "description": "Weekly availability, leave, and dynamic slot computation.",
+      "item": [
+        {
+          "name": "Create My Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/me/schedules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                "me",
+                "schedules"
+              ]
+            },
+            "description": "Adds a weekly recurring availability block. Overlapping schedules for the same day are rejected.\n\n**Auth required:** Yes\n**Role required:** DOCTOR\n\n**Validation rules:**\n- dayOfWeek: one of MONDAY..SUNDAY\n- startTime/endTime: HH:mm 24h format, startTime < endTime\n- consultationDurationMins: positive integer, must evenly divide the block where practical\n- No overlap with an existing active schedule on the same day",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"SUNDAY\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"13:00\",\n  \"consultationDurationMins\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me/schedules",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me",
+                    "schedules"
+                  ]
+                },
+                "description": "Adds a weekly recurring availability block. Overlapping schedules for the same day are rejected.\n\n**Auth required:** Yes\n**Role required:** DOCTOR\n\n**Validation rules:**\n- dayOfWeek: one of MONDAY..SUNDAY\n- startTime/endTime: HH:mm 24h format, startTime < endTime\n- consultationDurationMins: positive integer, must evenly divide the block where practical\n- No overlap with an existing active schedule on the same day",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dayOfWeek\": \"SUNDAY\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"13:00\",\n  \"consultationDurationMins\": 20\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schedule created\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"dayOfWeek\": \"SUNDAY\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"13:00\"\n  }\n}"
+            },
+            {
+              "name": "Overlapping schedule",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me/schedules",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me",
+                    "schedules"
+                  ]
+                },
+                "description": "Adds a weekly recurring availability block. Overlapping schedules for the same day are rejected.\n\n**Auth required:** Yes\n**Role required:** DOCTOR\n\n**Validation rules:**\n- dayOfWeek: one of MONDAY..SUNDAY\n- startTime/endTime: HH:mm 24h format, startTime < endTime\n- consultationDurationMins: positive integer, must evenly divide the block where practical\n- No overlap with an existing active schedule on the same day",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dayOfWeek\": \"SUNDAY\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"13:00\",\n  \"consultationDurationMins\": 20\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Overlapping schedule",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This schedule overlaps with an existing active schedule for that day\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Doctor Available Slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:id/available-slots?date=2026-09-10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                ":id",
+                "available-slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-09-10"
+                }
+              ]
+            },
+            "description": "Dynamically computes bookable time slots for a doctor on a given date, from their weekly schedule minus breaks, leave, holidays, and already-booked/held slots.\n\n**Auth required:** No\n**Role required:** None\n\n**Path params:**\n- id: Doctor id\n\n**Query params:**\n- date: YYYY-MM-DD (required)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/:id/available-slots?date=2026-09-10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    ":id",
+                    "available-slots"
+                  ],
+                  "query": [
+                    {
+                      "key": "date",
+                      "value": "2026-09-10"
+                    }
+                  ]
+                },
+                "description": "Dynamically computes bookable time slots for a doctor on a given date, from their weekly schedule minus breaks, leave, holidays, and already-booked/held slots.\n\n**Auth required:** No\n**Role required:** None\n\n**Path params:**\n- id: Doctor id\n\n**Query params:**\n- date: YYYY-MM-DD (required)"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Available slots retrieved\",\n  \"data\": {\n    \"date\": \"2026-09-10\",\n    \"slots\": [\n      \"09:00\",\n      \"09:20\",\n      \"09:40\",\n      \"10:00\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Schedule",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/me/schedules/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                "me",
+                "schedules",
+                ":id"
+              ]
+            },
+            "description": "Updates a schedule block the doctor owns. Doctors cannot create or edit schedules to start in the past.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must own the schedule)\n\n**Path params:**\n- id: DoctorSchedule id",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startTime\": \"10:00\",\n  \"endTime\": \"14:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me/schedules/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me",
+                    "schedules",
+                    ":id"
+                  ]
+                },
+                "description": "Updates a schedule block the doctor owns. Doctors cannot create or edit schedules to start in the past.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must own the schedule)\n\n**Path params:**\n- id: DoctorSchedule id",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"startTime\": \"10:00\",\n  \"endTime\": \"14:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schedule updated\",\n  \"data\": {}\n}"
+            },
+            {
+              "name": "Not the schedule owner",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me/schedules/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me",
+                    "schedules",
+                    ":id"
+                  ]
+                },
+                "description": "Updates a schedule block the doctor owns. Doctors cannot create or edit schedules to start in the past.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must own the schedule)\n\n**Path params:**\n- id: DoctorSchedule id",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"startTime\": \"10:00\",\n  \"endTime\": \"14:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not the schedule owner",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Forbidden\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create My Leave",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/me/leaves",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors",
+                "me",
+                "leaves"
+              ]
+            },
+            "description": "Marks a date range as unavailable (holiday/personal leave). If existing CONFIRMED appointments fall inside the range, they are flagged for admin/doctor follow-up rather than silently cancelled.\n\n**Auth required:** Yes\n**Role required:** DOCTOR\n\n**Validation rules:**\n- startDate <= endDate\n- startDate cannot be in the past",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-09-20\",\n  \"endDate\": \"2026-09-22\",\n  \"reason\": \"Conference\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/doctors/me/leaves",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "doctors",
+                    "me",
+                    "leaves"
+                  ]
+                },
+                "description": "Marks a date range as unavailable (holiday/personal leave). If existing CONFIRMED appointments fall inside the range, they are flagged for admin/doctor follow-up rather than silently cancelled.\n\n**Auth required:** Yes\n**Role required:** DOCTOR\n\n**Validation rules:**\n- startDate <= endDate\n- startDate cannot be in the past",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"startDate\": \"2026-09-20\",\n  \"endDate\": \"2026-09-22\",\n  \"reason\": \"Conference\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Leave created\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"startDate\": \"2026-09-20\",\n    \"endDate\": \"2026-09-22\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "description": "Booking, state transitions, and the double-booking-safe create endpoint.",
+      "item": [
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments"
+              ]
+            },
+            "description": "Books an appointment slot. This is the core concurrency-critical endpoint: internally wrapped in a Prisma transaction, and the database's unique constraint on (doctorId, appointmentDate, startTime) guarantees that if two patients race for the same slot, only one booking succeeds \u2014 the loser gets a 409, not corrupted data. Creates the appointment in PENDING_PAYMENT status and a linked Payment record; the appointment is only CONFIRMED once payment is verified (see Payments folder).\n\n**Auth required:** Yes\n**Role required:** PATIENT\n\n**Business rules:**\n- Doctor must be VERIFIED and ACTIVE\n- Slot must be in the doctor's available slots for that date (schedule minus breaks/leave/holidays)\n- Slot must not be in the past\n- consultationFee is taken from the doctor's current fee server-side \u2014 never trust a client-supplied amount",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": \"uuid\",\n  \"appointmentDate\": \"2026-09-10\",\n  \"startTime\": \"10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ]
+                },
+                "description": "Books an appointment slot. This is the core concurrency-critical endpoint: internally wrapped in a Prisma transaction, and the database's unique constraint on (doctorId, appointmentDate, startTime) guarantees that if two patients race for the same slot, only one booking succeeds \u2014 the loser gets a 409, not corrupted data. Creates the appointment in PENDING_PAYMENT status and a linked Payment record; the appointment is only CONFIRMED once payment is verified (see Payments folder).\n\n**Auth required:** Yes\n**Role required:** PATIENT\n\n**Business rules:**\n- Doctor must be VERIFIED and ACTIVE\n- Slot must be in the doctor's available slots for that date (schedule minus breaks/leave/holidays)\n- Slot must not be in the past\n- consultationFee is taken from the doctor's current fee server-side \u2014 never trust a client-supplied amount",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"doctorId\": \"uuid\",\n  \"appointmentDate\": \"2026-09-10\",\n  \"startTime\": \"10:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointment created, awaiting payment\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"PENDING_PAYMENT\",\n    \"consultationFee\": \"1000.00\",\n    \"appointmentDate\": \"2026-09-10\",\n    \"startTime\": \"10:00\"\n  }\n}"
+            },
+            {
+              "name": "Slot already taken",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ]
+                },
+                "description": "Books an appointment slot. This is the core concurrency-critical endpoint: internally wrapped in a Prisma transaction, and the database's unique constraint on (doctorId, appointmentDate, startTime) guarantees that if two patients race for the same slot, only one booking succeeds \u2014 the loser gets a 409, not corrupted data. Creates the appointment in PENDING_PAYMENT status and a linked Payment record; the appointment is only CONFIRMED once payment is verified (see Payments folder).\n\n**Auth required:** Yes\n**Role required:** PATIENT\n\n**Business rules:**\n- Doctor must be VERIFIED and ACTIVE\n- Slot must be in the doctor's available slots for that date (schedule minus breaks/leave/holidays)\n- Slot must not be in the past\n- consultationFee is taken from the doctor's current fee server-side \u2014 never trust a client-supplied amount",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"doctorId\": \"uuid\",\n  \"appointmentDate\": \"2026-09-10\",\n  \"startTime\": \"10:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Slot already taken",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This resource already exists or the slot was just taken by another request\",\n  \"errors\": []\n}"
+            },
+            {
+              "name": "Doctor not bookable",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ]
+                },
+                "description": "Books an appointment slot. This is the core concurrency-critical endpoint: internally wrapped in a Prisma transaction, and the database's unique constraint on (doctorId, appointmentDate, startTime) guarantees that if two patients race for the same slot, only one booking succeeds \u2014 the loser gets a 409, not corrupted data. Creates the appointment in PENDING_PAYMENT status and a linked Payment record; the appointment is only CONFIRMED once payment is verified (see Payments folder).\n\n**Auth required:** Yes\n**Role required:** PATIENT\n\n**Business rules:**\n- Doctor must be VERIFIED and ACTIVE\n- Slot must be in the doctor's available slots for that date (schedule minus breaks/leave/holidays)\n- Slot must not be in the past\n- consultationFee is taken from the doctor's current fee server-side \u2014 never trust a client-supplied amount",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"doctorId\": \"uuid\",\n  \"appointmentDate\": \"2026-09-10\",\n  \"startTime\": \"10:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Doctor not bookable",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This doctor is not currently accepting appointments\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments?page=1&limit=10&status=CONFIRMED",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "CONFIRMED"
+                }
+              ]
+            },
+            "description": "Lists appointments scoped to the caller: a patient sees their own, a doctor sees their assigned appointments, an admin sees all (with filters). Paginated.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments?page=1&limit=10&status=CONFIRMED",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "CONFIRMED"
+                    }
+                  ]
+                },
+                "description": "Lists appointments scoped to the caller: a patient sees their own, a doctor sees their assigned appointments, an admin sees all (with filters). Paginated.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointments retrieved\",\n  \"data\": [\n    {\n      \"id\": \"uuid\",\n      \"status\": \"CONFIRMED\",\n      \"appointmentDate\": \"2026-09-10\",\n      \"startTime\": \"10:00\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 3,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Appointment By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments",
+                ":id"
+              ]
+            },
+            "description": "Detail view. A patient/doctor may only view an appointment they're a party to; admin may view any.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN (ownership enforced for non-admins)\n\n**Path params:**\n- id: Appointment id"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id"
+                  ]
+                },
+                "description": "Detail view. A patient/doctor may only view an appointment they're a party to; admin may view any.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN (ownership enforced for non-admins)\n\n**Path params:**\n- id: Appointment id"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointment retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"CONFIRMED\"\n  }\n}"
+            },
+            {
+              "name": "Not your appointment",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id"
+                  ]
+                },
+                "description": "Detail view. A patient/doctor may only view an appointment they're a party to; admin may view any.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN (ownership enforced for non-admins)\n\n**Path params:**\n- id: Appointment id"
+              },
+              "status": "Not your appointment",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Forbidden\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments",
+                ":id",
+                "cancel"
+              ]
+            },
+            "description": "Cancels an appointment per cancellation policy (e.g. minimum notice window, refund eligibility). Completed appointments cannot be cancelled.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment) or ADMIN\n\n**Business rules:**\n- COMPLETED -> CANCELLED is rejected (invalid state transition)\n- Refund is processed automatically if the cancellation policy allows it",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Schedule conflict\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "cancel"
+                  ]
+                },
+                "description": "Cancels an appointment per cancellation policy (e.g. minimum notice window, refund eligibility). Completed appointments cannot be cancelled.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment) or ADMIN\n\n**Business rules:**\n- COMPLETED -> CANCELLED is rejected (invalid state transition)\n- Refund is processed automatically if the cancellation policy allows it",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Schedule conflict\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointment cancelled\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"CANCELLED\"\n  }\n}"
+            },
+            {
+              "name": "Invalid transition",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "cancel"
+                  ]
+                },
+                "description": "Cancels an appointment per cancellation policy (e.g. minimum notice window, refund eligibility). Completed appointments cannot be cancelled.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment) or ADMIN\n\n**Business rules:**\n- COMPLETED -> CANCELLED is rejected (invalid state transition)\n- Refund is processed automatically if the cancellation policy allows it",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Schedule conflict\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Invalid transition",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"A completed appointment cannot be cancelled\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reschedule Appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/reschedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments",
+                ":id",
+                "reschedule"
+              ]
+            },
+            "description": "Moves a CONFIRMED appointment to a new available slot for the same doctor, subject to the same double-booking-safe check as creation.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentDate\": \"2026-09-12\",\n  \"startTime\": \"11:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/reschedule",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "reschedule"
+                  ]
+                },
+                "description": "Moves a CONFIRMED appointment to a new available slot for the same doctor, subject to the same double-booking-safe check as creation.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointmentDate\": \"2026-09-12\",\n  \"startTime\": \"11:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointment rescheduled\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"RESCHEDULED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Check In Appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/check-in",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments",
+                ":id",
+                "check-in"
+              ]
+            },
+            "description": "Marks a CONFIRMED appointment as CHECKED_IN on the day of the visit. A cancelled appointment cannot be checked in.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/check-in",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "check-in"
+                  ]
+                },
+                "description": "Marks a CONFIRMED appointment as CHECKED_IN on the day of the visit. A cancelled appointment cannot be checked in.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Checked in\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"CHECKED_IN\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Appointment Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments",
+                ":id",
+                "status"
+              ]
+            },
+            "description": "Controlled state-transition endpoint for doctor/admin-driven status changes (e.g. CHECKED_IN -> IN_PROGRESS, or marking NO_SHOW). Invalid transitions (e.g. COMPLETED -> PENDING_PAYMENT) are rejected with 409.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (assigned doctor) or ADMIN\n\n**Validation rules:**\n- status: one of the AppointmentStatus enum values\n- Transition must be in the allowed state machine",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "status"
+                  ]
+                },
+                "description": "Controlled state-transition endpoint for doctor/admin-driven status changes (e.g. CHECKED_IN -> IN_PROGRESS, or marking NO_SHOW). Invalid transitions (e.g. COMPLETED -> PENDING_PAYMENT) are rejected with 409.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (assigned doctor) or ADMIN\n\n**Validation rules:**\n- status: one of the AppointmentStatus enum values\n- Transition must be in the allowed state machine",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Appointment status updated\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"IN_PROGRESS\"\n  }\n}"
+            },
+            {
+              "name": "Invalid transition",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":id",
+                    "status"
+                  ]
+                },
+                "description": "Controlled state-transition endpoint for doctor/admin-driven status changes (e.g. CHECKED_IN -> IN_PROGRESS, or marking NO_SHOW). Invalid transitions (e.g. COMPLETED -> PENDING_PAYMENT) are rejected with 409.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (assigned doctor) or ADMIN\n\n**Validation rules:**\n- status: one of the AppointmentStatus enum values\n- Transition must be in the allowed state machine",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Invalid transition",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot transition from COMPLETED to PENDING_PAYMENT\",\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Consultation",
+      "description": "Doctor-recorded consultation notes tied to a checked-in appointment.",
+      "item": [
+        {
+          "name": "Create Consultation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "consultations"
+              ]
+            },
+            "description": "Starts a consultation record for a CHECKED_IN appointment (moves appointment to IN_PROGRESS).\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"uuid\",\n  \"chiefComplaint\": \"Chest pain for 2 days\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/consultations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "consultations"
+                  ]
+                },
+                "description": "Starts a consultation record for a CHECKED_IN appointment (moves appointment to IN_PROGRESS).\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointmentId\": \"uuid\",\n  \"chiefComplaint\": \"Chest pain for 2 days\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Consultation started\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"IN_PROGRESS\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Consultation By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "consultations",
+                ":id"
+              ]
+            },
+            "description": "Retrieves consultation notes. The patient can view according to privacy rules; the doctor who conducted it and admin can always view.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), DOCTOR (own), or ADMIN\n\n**Path params:**\n- id: Consultation id"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/consultations/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "consultations",
+                    ":id"
+                  ]
+                },
+                "description": "Retrieves consultation notes. The patient can view according to privacy rules; the doctor who conducted it and admin can always view.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), DOCTOR (own), or ADMIN\n\n**Path params:**\n- id: Consultation id"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Consultation retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"diagnosis\": \"Mild GERD\",\n    \"status\": \"COMPLETED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Consultation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "consultations",
+                ":id"
+              ]
+            },
+            "description": "Doctor records symptoms/diagnosis/notes and marks the consultation COMPLETED, which also completes the linked appointment.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symptoms\": \"Chest tightness, no radiation\",\n  \"diagnosis\": \"Mild GERD\",\n  \"clinicalNotes\": \"No cardiac markers indicated at this time\",\n  \"treatmentPlan\": \"PPI course, follow-up in 2 weeks\",\n  \"followUpDate\": \"2026-09-24\",\n  \"status\": \"COMPLETED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/consultations/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "consultations",
+                    ":id"
+                  ]
+                },
+                "description": "Doctor records symptoms/diagnosis/notes and marks the consultation COMPLETED, which also completes the linked appointment.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"symptoms\": \"Chest tightness, no radiation\",\n  \"diagnosis\": \"Mild GERD\",\n  \"clinicalNotes\": \"No cardiac markers indicated at this time\",\n  \"treatmentPlan\": \"PPI course, follow-up in 2 weeks\",\n  \"followUpDate\": \"2026-09-24\",\n  \"status\": \"COMPLETED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Consultation updated\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"COMPLETED\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prescription",
+      "description": "Prescriptions tied to a consultation.",
+      "item": [
+        {
+          "name": "Create Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions"
+              ]
+            },
+            "description": "Creates a prescription linked to a consultation. Only the doctor who owns the consultation may create it; cannot be created for a cancelled appointment.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor for the consultation)\n\n**Validation rules:**\n- consultationId: must exist and belong to the requesting doctor\n- items: at least 1 item, each with medicineId/dosage/frequency/duration",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultationId\": \"uuid\",\n  \"notes\": \"Take with food\",\n  \"items\": [\n    {\n      \"medicineId\": \"uuid\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"3 times/day\",\n      \"duration\": \"5 days\",\n      \"instructions\": \"After meal\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/prescriptions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "prescriptions"
+                  ]
+                },
+                "description": "Creates a prescription linked to a consultation. Only the doctor who owns the consultation may create it; cannot be created for a cancelled appointment.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor for the consultation)\n\n**Validation rules:**\n- consultationId: must exist and belong to the requesting doctor\n- items: at least 1 item, each with medicineId/dosage/frequency/duration",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"consultationId\": \"uuid\",\n  \"notes\": \"Take with food\",\n  \"items\": [\n    {\n      \"medicineId\": \"uuid\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"3 times/day\",\n      \"duration\": \"5 days\",\n      \"instructions\": \"After meal\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Prescription created\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"items\": [\n      {\n        \"medicine\": \"Paracetamol 500mg\",\n        \"dosage\": \"1 tablet\"\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Not the assigned doctor",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/prescriptions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "prescriptions"
+                  ]
+                },
+                "description": "Creates a prescription linked to a consultation. Only the doctor who owns the consultation may create it; cannot be created for a cancelled appointment.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor for the consultation)\n\n**Validation rules:**\n- consultationId: must exist and belong to the requesting doctor\n- items: at least 1 item, each with medicineId/dosage/frequency/duration",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"consultationId\": \"uuid\",\n  \"notes\": \"Take with food\",\n  \"items\": [\n    {\n      \"medicineId\": \"uuid\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"3 times/day\",\n      \"duration\": \"5 days\",\n      \"instructions\": \"After meal\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not the assigned doctor",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Forbidden\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List My Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Patients see their own prescriptions; doctors see ones they wrote; admin can filter by patient/doctor.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/prescriptions?page=1&limit=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "prescriptions"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Patients see their own prescriptions; doctors see ones they wrote; admin can filter by patient/doctor.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Prescriptions retrieved\",\n  \"data\": [],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 0,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Prescription By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                ":id"
+              ]
+            },
+            "description": "Detail view with full medicine list.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), DOCTOR (own), or ADMIN\n\n**Path params:**\n- id: Prescription id"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/prescriptions/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "prescriptions",
+                    ":id"
+                  ]
+                },
+                "description": "Detail view with full medicine list.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), DOCTOR (own), or ADMIN\n\n**Path params:**\n- id: Prescription id"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Prescription retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"items\": []\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Laboratory",
+      "description": "Lab test ordering and result workflow.",
+      "item": [
+        {
+          "name": "Create Lab Test Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab-test-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab-test-requests"
+              ]
+            },
+            "description": "Doctor orders a lab test as part of a consultation.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor for the consultation)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultationId\": \"uuid\",\n  \"labTestId\": \"uuid\",\n  \"notes\": \"Fasting sample\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/lab-test-requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "lab-test-requests"
+                  ]
+                },
+                "description": "Doctor orders a lab test as part of a consultation.\n\n**Auth required:** Yes\n**Role required:** DOCTOR (must be the assigned doctor for the consultation)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"consultationId\": \"uuid\",\n  \"labTestId\": \"uuid\",\n  \"notes\": \"Fasting sample\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lab test requested\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"REQUESTED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Lab Test Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab-test-requests?status=REQUESTED",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab-test-requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "REQUESTED"
+                }
+              ]
+            },
+            "description": "Patients see their own requests, doctors see ones they ordered, admin (who operates the lab workflow per spec section 14) manages the queue.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/lab-test-requests?status=REQUESTED",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "lab-test-requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "REQUESTED"
+                    }
+                  ]
+                },
+                "description": "Patients see their own requests, doctors see ones they ordered, admin (who operates the lab workflow per spec section 14) manages the queue.\n\n**Auth required:** Yes\n**Role required:** PATIENT, DOCTOR, or ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lab test requests retrieved\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Lab Test Result",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab-test-requests/:id/result",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab-test-requests",
+                ":id",
+                "result"
+              ]
+            },
+            "description": "Advances a lab request through REQUESTED -> SAMPLE_COLLECTED -> IN_PROGRESS -> COMPLETED -> RESULT_AVAILABLE, and attaches the result once available. Handled by Admin since the project has exactly 3 roles (see spec section 14).\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: LabTestRequest id",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESULT_AVAILABLE\",\n  \"resultSummary\": \"All values within normal range\",\n  \"resultFileUrl\": \"https://res.cloudinary.com/.../report.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/lab-test-requests/:id/result",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "lab-test-requests",
+                    ":id",
+                    "result"
+                  ]
+                },
+                "description": "Advances a lab request through REQUESTED -> SAMPLE_COLLECTED -> IN_PROGRESS -> COMPLETED -> RESULT_AVAILABLE, and attaches the result once available. Handled by Admin since the project has exactly 3 roles (see spec section 14).\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: LabTestRequest id",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"RESULT_AVAILABLE\",\n  \"resultSummary\": \"All values within normal range\",\n  \"resultFileUrl\": \"https://res.cloudinary.com/.../report.pdf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Lab result updated\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"RESULT_AVAILABLE\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "SSLCommerz initiate + gateway callbacks + verification.",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/initiate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "initiate"
+              ]
+            },
+            "description": "Starts an SSLCommerz payment session for a PENDING_PAYMENT appointment. The amount is pulled server-side from the appointment's snapshotted consultationFee \u2014 a client-supplied amount is never trusted. Returns the gateway redirect URL.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/initiate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "initiate"
+                  ]
+                },
+                "description": "Starts an SSLCommerz payment session for a PENDING_PAYMENT appointment. The amount is pulled server-side from the appointment's snapshotted consultationFee \u2014 a client-supplied amount is never trusted. Returns the gateway redirect URL.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointmentId\": \"uuid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment session created\",\n  \"data\": {\n    \"gatewayUrl\": \"https://sandbox.sslcommerz.com/gwprocess/v4/...\",\n    \"tranId\": \"HMS-uuid\"\n  }\n}"
+            },
+            {
+              "name": "Appointment not payable",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/initiate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "initiate"
+                  ]
+                },
+                "description": "Starts an SSLCommerz payment session for a PENDING_PAYMENT appointment. The amount is pulled server-side from the appointment's snapshotted consultationFee \u2014 a client-supplied amount is never trusted. Returns the gateway redirect URL.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own appointment)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointmentId\": \"uuid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Appointment not payable",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This appointment is not awaiting payment\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Payment Success Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/success",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "success"
+              ]
+            },
+            "description": "SSLCommerz redirects/POSTs here after a successful payment. The backend independently re-verifies the transaction with SSLCommerz's Validation API before trusting it \u2014 this callback alone is never sufficient to confirm payment, since it originates from the client's browser redirect, not a server-to-server channel. Duplicate calls for the same tranId are handled idempotently (safe to call more than once).\n\n**Auth required:** No (gateway callback)\n**Role required:** None\n\nFor production, the SSLCommerz IPN (server-to-server webhook) at `/payments/ipn` is the authoritative confirmation path; this success URL is for the user-facing redirect only.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tran_id\": \"HMS-uuid\",\n  \"val_id\": \"sslcommerz-val-id\",\n  \"amount\": \"1000.00\",\n  \"status\": \"VALID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/success",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "success"
+                  ]
+                },
+                "description": "SSLCommerz redirects/POSTs here after a successful payment. The backend independently re-verifies the transaction with SSLCommerz's Validation API before trusting it \u2014 this callback alone is never sufficient to confirm payment, since it originates from the client's browser redirect, not a server-to-server channel. Duplicate calls for the same tranId are handled idempotently (safe to call more than once).\n\n**Auth required:** No (gateway callback)\n**Role required:** None\n\nFor production, the SSLCommerz IPN (server-to-server webhook) at `/payments/ipn` is the authoritative confirmation path; this success URL is for the user-facing redirect only.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tran_id\": \"HMS-uuid\",\n  \"val_id\": \"sslcommerz-val-id\",\n  \"amount\": \"1000.00\",\n  \"status\": \"VALID\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment verified and appointment confirmed\",\n  \"data\": {\n    \"appointmentId\": \"uuid\",\n    \"status\": \"CONFIRMED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Payment Cancel Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "cancel"
+              ]
+            },
+            "description": "SSLCommerz redirects here if the user cancels the payment mid-flow. Payment status set to CANCELLED; appointment remains PENDING_PAYMENT (patient may retry).\n\n**Auth required:** No (gateway callback)\n**Role required:** None",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tran_id\": \"HMS-uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "cancel"
+                  ]
+                },
+                "description": "SSLCommerz redirects here if the user cancels the payment mid-flow. Payment status set to CANCELLED; appointment remains PENDING_PAYMENT (patient may retry).\n\n**Auth required:** No (gateway callback)\n**Role required:** None",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tran_id\": \"HMS-uuid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment cancelled\",\n  \"data\": {\n    \"status\": \"CANCELLED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Payment Fail Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/fail",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "fail"
+              ]
+            },
+            "description": "SSLCommerz redirects here on payment failure. Payment status set to FAILED; appointment remains PENDING_PAYMENT.\n\n**Auth required:** No (gateway callback)\n**Role required:** None",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tran_id\": \"HMS-uuid\",\n  \"error\": \"Card declined\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/fail",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "fail"
+                  ]
+                },
+                "description": "SSLCommerz redirects here on payment failure. Payment status set to FAILED; appointment remains PENDING_PAYMENT.\n\n**Auth required:** No (gateway callback)\n**Role required:** None",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tran_id\": \"HMS-uuid\",\n  \"error\": \"Card declined\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment failure recorded\",\n  \"data\": {\n    \"status\": \"FAILED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                ":id"
+              ]
+            },
+            "description": "Payment detail/receipt view.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), or ADMIN\n\n**Path params:**\n- id: Payment id"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payments",
+                    ":id"
+                  ]
+                },
+                "description": "Payment detail/receipt view.\n\n**Auth required:** Yes\n**Role required:** PATIENT (own), or ADMIN\n\n**Path params:**\n- id: Payment id"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment retrieved\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"PAID\",\n    \"amount\": \"1000.00\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "User/doctor management, dashboard analytics, audit logs \u2014 ADMIN only.",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=20&role=DOCTOR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "role",
+                  "value": "DOCTOR"
+                }
+              ]
+            },
+            "description": "Paginated list of all users across all roles, filterable by role/status.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users?page=1&limit=20&role=DOCTOR",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "role",
+                      "value": "DOCTOR"
+                    }
+                  ]
+                },
+                "description": "Paginated list of all users across all roles, filterable by role/status.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Users retrieved\",\n  \"data\": [],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 0,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":id",
+                "status"
+              ]
+            },
+            "description": "Suspends or reactivates an account. A suspended user's existing access tokens stop working on their next request (requireAuth re-checks status on every call, not just at login) and all their refresh tokens should be revoked as part of this action. Writes an AuditLog entry.\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: User id",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    ":id",
+                    "status"
+                  ]
+                },
+                "description": "Suspends or reactivates an account. A suspended user's existing access tokens stop working on their next request (requireAuth re-checks status on every call, not just at login) and all their refresh tokens should be revoked as part of this action. Writes an AuditLog entry.\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: User id",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"SUSPENDED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User status updated\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"status\": \"SUSPENDED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Doctor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/:id/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors",
+                ":id",
+                "verify"
+              ]
+            },
+            "description": "Sets a doctor's verificationStatus to VERIFIED or REJECTED. Only VERIFIED + ACTIVE doctors are bookable. Writes an AuditLog entry (oldValue/newValue capture the status change).\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: Doctor id",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verificationStatus\": \"VERIFIED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/doctors/:id/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "doctors",
+                    ":id",
+                    "verify"
+                  ]
+                },
+                "description": "Sets a doctor's verificationStatus to VERIFIED or REJECTED. Only VERIFIED + ACTIVE doctors are bookable. Writes an AuditLog entry (oldValue/newValue capture the status change).\n\n**Auth required:** Yes\n**Role required:** ADMIN\n\n**Path params:**\n- id: Doctor id",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verificationStatus\": \"VERIFIED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Doctor verification status updated\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"verificationStatus\": \"VERIFIED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard-stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "dashboard-stats"
+              ]
+            },
+            "description": "Aggregate counts for the admin dashboard: totals, today's/monthly appointments, payment success rate, etc. Uses efficient aggregation queries rather than loading full row sets.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard-stats",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard-stats"
+                  ]
+                },
+                "description": "Aggregate counts for the admin dashboard: totals, today's/monthly appointments, payment success rate, etc. Uses efficient aggregation queries rather than loading full row sets.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Dashboard stats retrieved\",\n  \"data\": {\n    \"totalPatients\": 340,\n    \"totalDoctors\": 28,\n    \"totalAppointments\": 1240,\n    \"todaysAppointments\": 19,\n    \"monthlyRevenue\": \"410000.00\",\n    \"paymentSuccessRate\": 0.94\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs?page=1&limit=20&entityType=Appointment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "entityType",
+                  "value": "Appointment"
+                }
+              ]
+            },
+            "description": "Paginated, append-only audit trail. Filterable by actor, entityType, and date range.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/audit-logs?page=1&limit=20&entityType=Appointment",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "audit-logs"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "entityType",
+                      "value": "Appointment"
+                    }
+                  ]
+                },
+                "description": "Paginated, append-only audit trail. Filterable by actor, entityType, and date range.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Audit logs retrieved\",\n  \"data\": [\n    {\n      \"action\": \"APPOINTMENT_STATUS_CHANGED\",\n      \"entityType\": \"Appointment\",\n      \"entityId\": \"uuid\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 512,\n    \"totalPages\": 26\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Revenue Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/revenue-report?from=2026-08-01&to=2026-08-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "revenue-report"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-08-31"
+                }
+              ]
+            },
+            "description": "Monthly/date-ranged revenue breakdown, optionally by department or doctor.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/revenue-report?from=2026-08-01&to=2026-08-31",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "revenue-report"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "2026-08-01"
+                    },
+                    {
+                      "key": "to",
+                      "value": "2026-08-31"
+                    }
+                  ]
+                },
+                "description": "Monthly/date-ranged revenue breakdown, optionally by department or doctor.\n\n**Auth required:** Yes\n**Role required:** ADMIN"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Revenue report generated\",\n  \"data\": {\n    \"totalRevenue\": \"410000.00\",\n    \"byDepartment\": [\n      {\n        \"department\": \"Cardiology\",\n        \"revenue\": \"120000.00\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

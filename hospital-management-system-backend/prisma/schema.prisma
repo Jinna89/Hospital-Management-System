@@ -1,0 +1,555 @@
+// =============================================================================
+// Hospital & Doctor Management System — Prisma Schema
+// =============================================================================
+// Design notes:
+// - The system has exactly 3 fixed roles (PATIENT, DOCTOR, ADMIN), so `role`
+//   is modeled as an enum on User rather than a dynamic Role table — a
+//   separate Role table would only be justified if roles/permissions were
+//   configurable at runtime, which the spec explicitly rules out.
+// - Soft delete uses `deletedAt DateTime?` on entities that must preserve
+//   history (Doctor, Patient, Department, Medicine, LabTest). Appointments,
+//   Consultations, Prescriptions, Payments, AuditLogs are never soft-deleted;
+//   they are immutable/append-only records governed by status fields instead.
+// - Double-booking prevention relies on a DB-level unique constraint
+//   (doctorId, appointmentDate, startTime, holdsSlot) — see the Appointment
+//   model for how `holdsSlot` frees a slot on cancel/reschedule.
+// =============================================================================
+
+generator client {
+  provider   = "prisma-client-js"
+  // Rust-free client: queries are compiled by a bundled WASM module and sent
+  // through the `pg` driver adapter (see src/lib/prisma-client.ts), so there
+  // is no native query-engine binary to download, ship, or mismatch against
+  // the deploy target (the cause of several earlier Vercel-only failures).
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum DoctorVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AppointmentStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+enum ConsultationStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LabTestRequestStatus {
+  REQUESTED
+  SAMPLE_COLLECTED
+  IN_PROGRESS
+  COMPLETED
+  RESULT_AVAILABLE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentGateway {
+  SSLCOMMERZ
+}
+
+enum NotificationType {
+  APPOINTMENT_BOOKED
+  PAYMENT_SUCCESSFUL
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_REMINDER
+  DOCTOR_SCHEDULE_CHANGED
+  CONSULTATION_COMPLETED
+  PRESCRIPTION_CREATED
+  LAB_RESULT_AVAILABLE
+  GENERAL
+}
+
+// -----------------------------------------------------------------------------
+// User & Auth
+// -----------------------------------------------------------------------------
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  passwordHash    String
+  name            String
+  phone           String?
+  role            UserRole
+  status          AccountStatus @default(ACTIVE)
+  isEmailVerified Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  patient       Patient?
+  doctor        Doctor?
+  refreshTokens RefreshToken[]
+  notifications Notification[]
+  auditLogs     AuditLog[]     @relation("AuditActor")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// -----------------------------------------------------------------------------
+// Patient
+// -----------------------------------------------------------------------------
+
+model Patient {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  dateOfBirth      DateTime?
+  gender           Gender?
+  bloodGroup       String?
+  address          String?
+  emergencyContact String?
+  allergies        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  labRequests   LabTestRequest[]
+  payments      Payment[]
+
+  @@index([userId])
+  @@map("patients")
+}
+
+// -----------------------------------------------------------------------------
+// Department & Doctor
+// -----------------------------------------------------------------------------
+
+model Department {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  doctors DoctorDepartment[]
+
+  @@map("departments")
+}
+
+model Doctor {
+  id                 String                   @id @default(uuid())
+  userId             String                   @unique
+  name               String
+  specialty          String
+  qualification      String?
+  experienceYears    Int                      @default(0)
+  licenseNumber      String                   @unique
+  consultationFee    Decimal                  @db.Decimal(10, 2)
+  bio                String?
+  profileImage       String?
+  verificationStatus DoctorVerificationStatus @default(PENDING)
+  status             DoctorStatus             @default(ACTIVE)
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  deletedAt          DateTime?
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departments     DoctorDepartment[]
+  schedules       DoctorSchedule[]
+  leaves          DoctorLeave[]
+  appointments    Appointment[]
+  consultations   Consultation[]
+  prescriptions   Prescription[]
+  labTestRequests LabTestRequest[]
+
+  @@index([specialty])
+  @@index([verificationStatus])
+  @@map("doctors")
+}
+
+// Many-to-many join: a doctor may belong to more than one department
+model DoctorDepartment {
+  doctorId     String
+  departmentId String
+  createdAt    DateTime @default(now())
+
+  doctor     Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, departmentId])
+  @@index([departmentId])
+  @@map("doctor_departments")
+}
+
+// -----------------------------------------------------------------------------
+// Doctor Scheduling
+// -----------------------------------------------------------------------------
+
+model DoctorSchedule {
+  id                       String    @id @default(uuid())
+  doctorId                 String
+  dayOfWeek                DayOfWeek
+  startTime                String // "09:00" (24h, stored as string to avoid TZ ambiguity; validated in service layer)
+  endTime                  String // "13:00"
+  consultationDurationMins Int       @default(20)
+  breakStartTime           String?
+  breakEndTime             String?
+  isActive                 Boolean   @default(true)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, dayOfWeek])
+  @@map("doctor_schedules")
+}
+
+model DoctorLeave {
+  id        String   @id @default(uuid())
+  doctorId  String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, startDate, endDate])
+  @@map("doctor_leaves")
+}
+
+// -----------------------------------------------------------------------------
+// Appointment
+// -----------------------------------------------------------------------------
+
+model Appointment {
+  id              String            @id @default(uuid())
+  patientId       String
+  doctorId        String
+  appointmentDate DateTime          @db.Date
+  startTime       String // "10:00"
+  endTime         String // "10:20"
+  status          AppointmentStatus @default(PENDING_PAYMENT)
+  consultationFee Decimal           @db.Decimal(10, 2) // snapshot of doctor's fee at booking time
+  reason          String?
+  cancelReason    String?
+  // `true` while this appointment occupies its slot, `NULL` once it is
+  // cancelled / rescheduled / no-show. Postgres treats NULLs as distinct in
+  // unique indexes, so the composite unique below only constrains rows that
+  // still hold the slot — a freed slot can be rebooked without a partial
+  // index (which Prisma cannot express) and without deleting history.
+  holdsSlot       Boolean?          @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  patient       Patient                    @relation(fields: [patientId], references: [id])
+  doctor        Doctor                     @relation(fields: [doctorId], references: [id])
+  statusHistory AppointmentStatusHistory[]
+  consultation  Consultation?
+  payment       Payment?
+
+  // The core anti-double-booking guarantee: the database itself refuses two
+  // slot-holding rows for the same doctor/date/time, regardless of
+  // application logic or concurrent requests.
+  @@unique([doctorId, appointmentDate, startTime, holdsSlot], name: "doctor_slot_unique")
+  @@index([doctorId, appointmentDate])
+  @@index([patientId])
+  @@index([status])
+  @@map("appointments")
+}
+
+model AppointmentStatusHistory {
+  id            String             @id @default(uuid())
+  appointmentId String
+  fromStatus    AppointmentStatus?
+  toStatus      AppointmentStatus
+  changedBy     String // userId of actor (patient, doctor, or admin)
+  note          String?
+  createdAt     DateTime           @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+  @@map("appointment_status_history")
+}
+
+// -----------------------------------------------------------------------------
+// Consultation
+// -----------------------------------------------------------------------------
+
+model Consultation {
+  id             String             @id @default(uuid())
+  appointmentId  String             @unique
+  doctorId       String
+  patientId      String
+  chiefComplaint String?
+  symptoms       String?
+  diagnosis      String?
+  clinicalNotes  String?
+  treatmentPlan  String?
+  followUpDate   DateTime?
+  status         ConsultationStatus @default(IN_PROGRESS)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  appointment     Appointment      @relation(fields: [appointmentId], references: [id])
+  doctor          Doctor           @relation(fields: [doctorId], references: [id])
+  prescriptions   Prescription[]
+  labTestRequests LabTestRequest[]
+
+  @@index([doctorId])
+  @@index([patientId])
+  @@map("consultations")
+}
+
+// -----------------------------------------------------------------------------
+// Prescription
+// -----------------------------------------------------------------------------
+
+model Medicine {
+  id          String    @id @default(uuid())
+  name        String
+  genericName String?
+  form        String? // tablet, syrup, injection, etc.
+  strength    String? // e.g. "500mg"
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  items PrescriptionItem[]
+
+  @@index([name])
+  @@map("medicines")
+}
+
+model Prescription {
+  id             String   @id @default(uuid())
+  consultationId String
+  doctorId       String
+  patientId      String
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  consultation Consultation       @relation(fields: [consultationId], references: [id])
+  doctor       Doctor             @relation(fields: [doctorId], references: [id])
+  patient      Patient            @relation(fields: [patientId], references: [id])
+  items        PrescriptionItem[]
+
+  @@index([consultationId])
+  @@index([patientId])
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id             String  @id @default(uuid())
+  prescriptionId String
+  medicineId     String
+  dosage         String // e.g. "1 tablet"
+  frequency      String // e.g. "3 times/day"
+  duration       String // e.g. "5 days"
+  instructions   String? // e.g. "After meal"
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medicine     Medicine     @relation(fields: [medicineId], references: [id])
+
+  @@index([prescriptionId])
+  @@map("prescription_items")
+}
+
+// -----------------------------------------------------------------------------
+// Laboratory
+// -----------------------------------------------------------------------------
+
+model LabTest {
+  id          String    @id @default(uuid())
+  name        String // e.g. "CBC", "Blood Sugar"
+  code        String    @unique
+  description String?
+  price       Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  requests LabTestRequest[]
+
+  @@map("lab_tests")
+}
+
+model LabTestRequest {
+  id             String               @id @default(uuid())
+  consultationId String
+  doctorId       String
+  patientId      String
+  labTestId      String
+  status         LabTestRequestStatus @default(REQUESTED)
+  notes          String?
+  requestedAt    DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+  doctor       Doctor       @relation(fields: [doctorId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  labTest      LabTest      @relation(fields: [labTestId], references: [id])
+  result       LabResult?
+
+  @@index([consultationId])
+  @@index([patientId])
+  @@index([status])
+  @@map("lab_test_requests")
+}
+
+model LabResult {
+  id               String   @id @default(uuid())
+  labTestRequestId String   @unique
+  resultSummary    String?
+  resultFileUrl    String?
+  reviewedByUserId String? // admin/lab staff user id who finalized the result
+  completedAt      DateTime @default(now())
+
+  labTestRequest LabTestRequest @relation(fields: [labTestRequestId], references: [id])
+
+  @@map("lab_results")
+}
+
+// -----------------------------------------------------------------------------
+// Payment
+// -----------------------------------------------------------------------------
+
+model Payment {
+  id              String         @id @default(uuid())
+  appointmentId   String         @unique
+  patientId       String
+  amount          Decimal        @db.Decimal(10, 2)
+  currency        String         @default("BDT")
+  status          PaymentStatus  @default(PENDING)
+  gateway         PaymentGateway @default(SSLCOMMERZ)
+  gatewayTranId   String         @unique // SSLCommerz tran_id we generate
+  gatewayValId    String? // SSLCommerz val_id returned after validation
+  gatewayResponse Json? // raw verified gateway response, for audit/debug
+  paidAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  patient     Patient     @relation(fields: [patientId], references: [id])
+
+  @@index([appointmentId])
+  @@index([status])
+  @@map("payments")
+}
+
+// -----------------------------------------------------------------------------
+// Notification
+// -----------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// -----------------------------------------------------------------------------
+// Audit Log (append-only)
+// -----------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String // e.g. "DOCTOR_VERIFIED", "APPOINTMENT_CANCELLED"
+  entityType String // e.g. "Doctor", "Appointment", "Payment"
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
